@@ -52,8 +52,8 @@ end
 
 
 class Waxxer::TwilogWax < Waxxer::Wax
-	def initialize
-		@since = Date.new(2010, 1, 10)
+	def initialize(since = Date.new(2010, 1, 10))
+		@since = since
 	end
 
 	def status(id = nil)
@@ -96,12 +96,46 @@ class Waxxer::TwilogWax < Waxxer::Wax
 end
 
 class Waxxer::FavotterWax < Waxxer::Wax
+	def initialize(threshold = 1, last = 501)
+		@threshold = threshold
+		@last = last
+	end
 	def status(id = nil)
+		statuses = []
+		page = (rand * @last).floor
+		uri = "http://favotter.net/user/takano32?threshold=#{@threshold}&page=#{page}"
+		doc = Nokogiri::HTML(open(uri))
+		doc.css('span.status_text').each do |nodeset|
+			begin
+				text = nodeset.children.map do |node|
+					case node.name
+					when 'a'
+						raise
+					when 'span'
+						if node.attributes['class'].to_s == 'censored' then
+							'XXX'
+						else
+							node.to_s
+						end
+					else
+						node.to_s
+					end
+				end.join('')
+			rescue Exception => e
+				next
+			end
+			status = {}
+			status[:text] = CGI.unescapeHTML CGI.unescapeHTML(text)
+			statuses << status
+		end
+		return status if statuses.empty?
+		return statuses.shuffle.first
 	end
 end
 
 if __FILE__ == $0 then
-	wax = Waxxer::TwilogWax.new
+	wax = Waxxer::FavotterWax.new(2)
+	# wax = Waxxer::TwilogWax.new
 	waxxer = Waxxer.new(wax)
 	puts waxxer.say
 end
