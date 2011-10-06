@@ -62,8 +62,7 @@ class Waxxer::TwilogWax < Waxxer::Wax
 			month = rand * 12 + 1
 			day = rand * 31 + 1
 			date = Date.new(year.floor, month.floor, day.floor)
-			raise if date < limit
-			raise if today < date
+			raise if date < limit or today < date
 		rescue Exception => e
 			retry
 		end
@@ -100,6 +99,9 @@ end
 
 if __FILE__ == $0 then
 	wax = Waxxer::TwilogWax.new
-	puts wax.status[:text]
+	loop do
+		puts wax.status[:text]
+		sleep 10
+	end
 end
 
