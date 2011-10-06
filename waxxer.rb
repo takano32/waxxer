@@ -7,7 +7,10 @@ require 'rubygems'
 require 'pit'
 require 'oauth'
 require 'rubytter'
+
+require 'open-uri'
 require 'nokogiri'
+require 'cgi'
 
 class Waxxer
 	def initialize(wax)
@@ -48,7 +51,6 @@ class Waxxer::Wax
 end
 
 
-require 'open-uri'
 class Waxxer::TwilogWax < Waxxer::Wax
 	def status(id = nil)
 		statuses = []
@@ -82,7 +84,7 @@ class Waxxer::TwilogWax < Waxxer::Wax
 				next
 			end
 			status = {}
-			status[:text] = text
+			status[:text] = CGI.unescapeHTML(text)
 			statuses << status
 		end
 		return status if statuses.empty?
