@@ -7,9 +7,7 @@ require 'rubygems'
 require 'pit'
 require 'oauth'
 require 'rubytter'
-
-
-
+require 'nokogiri'
 
 class Waxxer
 	def initialize(wax)
@@ -38,19 +36,68 @@ class Waxxer
 
 	def say
 		status = @wax.status
+		@rubytter.update(status[:text])
 	end
 end
 
 class Waxxer::Wax
-	# status(id = rand)
+	def status(id = nil)
+		# return random status
+		return nil
+	end
 end
 
+
+require 'open-uri'
 class Waxxer::TwilogWax < Waxxer::Wax
+	def status(id = nil)
+		statuses = []
+		date = nil
+		begin
+			today = Date.today
+			limit = Date.new(2010, 1, 10)
+			year = rand * (today.year - limit.year) + limit.year + 0.5
+			month = rand * 12 + 1
+			day = rand * 31 + 1
+			date = Date.new(year.floor, month.floor, day.floor)
+			raise if date < limit
+			raise if today < date
+		rescue Exception => e
+			retry
+		end
+
+		uri = date.strftime('http://twilog.org/takano32/date-%y%m%d')
+		doc = Nokogiri::HTML(open(uri))
+		doc.css('p.tl-text').each do |nodeset|
+			begin
+				text = nodeset.children.map do |node|
+					case node.name
+					when 'a'
+						raise
+					else
+						node.to_s
+					end
+				end.join('')
+			rescue
+				next
+			end
+			status = {}
+			status[:text] = text
+			statuses << status
+		end
+		return status if statuses.empty?
+		return statuses.shuffle.first
+	end
+
 end
 
 class Waxxer::FavotterWax < Waxxer::Wax
+	def status(id = nil)
+	end
 end
 
 if __FILE__ == $0 then
+	wax = Waxxer::TwilogWax.new
+	puts wax.status[:text]
 end
 
