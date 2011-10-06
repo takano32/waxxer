@@ -38,8 +38,9 @@ class Waxxer
 	end
 
 	def say
-		status = @wax.status
-		@rubytter.update(status[:text])
+		text = @wax.status[:text]
+		@rubytter.update(text)
+		return text
 	end
 end
 
@@ -99,9 +100,7 @@ end
 
 if __FILE__ == $0 then
 	wax = Waxxer::TwilogWax.new
-	loop do
-		puts wax.status[:text]
-		sleep 10
-	end
+	waxxer = Waxxer.new(wax)
+	puts waxxer.say
 end
 
