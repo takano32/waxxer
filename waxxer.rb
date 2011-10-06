@@ -39,31 +39,33 @@ class Waxxer
 
 	def say
 		text = @wax.status[:text]
-		@rubytter.update(text)
+		@rubytter.update(text) if text
 		return text
 	end
 end
 
 class Waxxer::Wax
 	def status(id = nil)
-		# return random status
-		return nil
+		return {:text => nil}
 	end
 end
 
 
 class Waxxer::TwilogWax < Waxxer::Wax
+	def initialize
+		@since = Date.new(2010, 1, 10)
+	end
+
 	def status(id = nil)
 		statuses = []
 		date = nil
 		begin
 			today = Date.today
-			limit = Date.new(2010, 1, 10)
-			year = rand * (today.year - limit.year) + limit.year + 0.5
+			year = rand * (today.year - @since.year) + @since.year + 0.5
 			month = rand * 12 + 1
 			day = rand * 31 + 1
 			date = Date.new(year.floor, month.floor, day.floor)
-			raise if date < limit or today < date
+			raise if date < @since or today < date
 		rescue Exception => e
 			retry
 		end
